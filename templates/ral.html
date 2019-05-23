@@ -5,7 +5,8 @@
     <title>Title</title>
 </head>
 <body>
-    <form action="login">
+    <form action="/login" method="post" name="login">
+        <input type = "hidden" name = "csrf_token" value = "{{ csrf_token() }}">
         <h1>登陆</h1>
         <table>
             <tr>
@@ -20,16 +21,17 @@
         </table>
         <hr>
     </form>
-    <form action="register">
+    <form action="/register" method="post" name="register">
+        <input type = "hidden" name = "csrf_token" value = "{{ csrf_token() }}">
         <h1>注册</h1>
         <table>
             <tr>
                 <td>用户名:</td>
-                <td><input type="text" name="username"></td>
+                <td><input type="text" name="susername"></td>
             </tr>
             <tr>
                 <td>密码:</td>
-                <td><input type="password" name="password"></td>
+                <td><input type="password" name="spassword"></td>
             </tr>
             <input type="submit" value="注册">
         </table>

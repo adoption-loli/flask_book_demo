@@ -27,43 +27,53 @@ def ral():
     return render_template('ral.html')
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['POST'])
 def login():
     username = request.form.get('username')
     password = request.form.get('password')
     user = User.query.filter(and_(User.username == username, User.password == password)).first()
     if user:
         session['username'] = username
-        return 'username'
+        session['password'] = password
+        return redirect(url_for('lsuss'))
     else:
         return '用户名或密码错误'
 
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET'])
+def lsuss():
+    return render_template('log.html')
+
+
+@app.route('/register', methods=['POST'])
 def register():
-    username = request.form.get('username')
-    password = request.form.get('password')
+    username = request.form.get('susername')
+    password = request.form.get('spassword')
     user = User(username=username, password=password)
     db.session.add(user)
     db.session.commit()
+    return redirect(url_for('ral'))
 
 
 @app.before_request
 def test():
     username = session.get('username')
+    password = session.get('password')
     if username:
-        return render_template('log.html')
-    else:
-        ral()
+        user = User.query.filter(and_(User.username == username, User.password == password)).first()
+        if user:
+            return render_template('log.html')
 
 
 @app.context_processor
 def name():
     username = session.get('username')
-    return { 'username': username }
+    return {'username': username}
+
+
+db.drop_all()
+db.create_all()
 
 
 if __name__ == '__main__':
-    db.drop_all()
-    db.create_all()
-    app.run(Debug = True)
+    app.run(Debug=True)
