@@ -22,6 +22,13 @@ class User(db.Model):
     password = db.Column(db.String(128), unique=False)
 
 
+class Index(db.Model):
+    __tablename__ = 'indexs'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(128))
+    content = db.Column(db.String(128))
+
+
 @app.route('/ral', methods=['GET', 'POST'])
 def ral():
     return render_template('ral.html')
@@ -40,29 +47,52 @@ def login():
         return '用户名或密码错误'
 
 
-@app.route('/login', methods=['GET'])
+@app.route('/if_login', methods=['GET', 'POST'])
 def lsuss():
-    return render_template('log.html')
+    index_library = [index for index in Index.query.all()]
+    if g.username:
+        return render_template('log.html',index_library=index_library)
+    else:
+        return render_template('ral.html')
 
 
 @app.route('/register', methods=['POST'])
 def register():
     username = request.form.get('susername')
     password = request.form.get('spassword')
-    user = User(username=username, password=password)
-    db.session.add(user)
-    db.session.commit()
+    user = User.query.filter(and_(User.username == username)).first()
+    if not user:
+        user = User(username=username, password=password)
+        db.session.add(user)
+        db.session.commit()
+    else:
+        return '已注册'
     return redirect(url_for('ral'))
+
+
+@app.route('/add_index', methods=['POST'])
+def add_index():
+    title = request.form.get('title')
+    content = request.form.get('content')
+    if len(content) > 100:
+        content = content[:100] + '...'
+    if len(title) > 100:
+         title = title[:100] + '...'
+    index = Index(title=title, content=content)
+    db.session.add(index)
+    db.session.commit()
+    return redirect(url_for('lsuss'))
 
 
 @app.before_request
 def test():
     username = session.get('username')
     password = session.get('password')
+    g.username = None
     if username:
         user = User.query.filter(and_(User.username == username, User.password == password)).first()
         if user:
-            return render_template('log.html')
+            g.username = username
 
 
 @app.context_processor

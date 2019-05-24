@@ -5,6 +5,20 @@
     <title>Title</title>
 </head>
 <body>
-<h1>登陆成功{{ username }}</h1>
+<form action="add_index" name = "add_index" method="post">
+<input type = "hidden" name = "csrf_token" value = "{{ csrf_token() }}">
+    <p style="display: inline-block">标题：</p>
+    <input type="text" name="title"><br>
+    <input type="textarea" name="content" style="height: 200px; width: 600px"><br><br>
+    <input type="submit" value="提交">
+</form>
+{% for index in index_library %}
+    <div>
+        <a href="#">{{ index.title }}</a><br>
+        <p>{{ index.content }}</p>
+        <hr>
+    </div>
+{% endfor %}
+
 </body>
 </html>
