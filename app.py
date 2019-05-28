@@ -1,11 +1,19 @@
-from flask import Flask
 from flask import Flask, render_template, redirect, url_for, flash, request,session,g
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_
 from flask_wtf.csrf import CSRFProtect
-import os
+from flask_wtf import FlaskForm
+from flask_pagedown import PageDown
+from flask_pagedown.fields import PageDownField
+from wtforms.validators import DataRequired
+from wtforms.fields import SubmitField, StringField
+import markdown
+from bs4 import BeautifulSoup
+import nltk
 
 app = Flask(__name__)
+
+pagedown = PageDown(app)
 
 app.config['SECRET_KEY'] = "afsfa"
 CSRFProtect(app)
@@ -13,6 +21,12 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:admin@127.0.0.1:33
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+
+
+class PostForm(FlaskForm):
+    title = StringField("标题", render_kw={'cols': 170})
+    body = PageDownField(render_kw={'rows': 18, 'cols': 180})
+    submit = SubmitField("提交")
 
 
 class User(db.Model):
@@ -50,8 +64,9 @@ def login():
 @app.route('/if_login', methods=['GET', 'POST'])
 def lsuss():
     index_library = [index for index in Index.query.all()]
+    form = PostForm()
     if g.username:
-        return render_template('log.html',index_library=index_library)
+        return render_template('log.html', index_library=index_library, form=form)
     else:
         return render_template('ral.html')
 
@@ -72,15 +87,13 @@ def register():
 
 @app.route('/add_index', methods=['POST'])
 def add_index():
-    title = request.form.get('title')
-    content = request.form.get('content')
-    if len(content) > 100:
-        content = content[:100] + '...'
-    if len(title) > 100:
-         title = title[:100] + '...'
-    index = Index(title=title, content=content)
-    db.session.add(index)
-    db.session.commit()
+    if g.username:
+        form = PostForm(request.form)
+        titlehtml = '<h1>' + form.title.data + '</h1>'
+        bodyhtml = markdown.markdown(form.body.data)
+        index = Index(title=form.title.data[:20], content=BeautifulSoup(bodyhtml).get_text()[:100])
+        db.session.add(index)
+        db.session.commit()
     return redirect(url_for('lsuss'))
 
 

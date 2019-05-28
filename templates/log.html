@@ -3,15 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+    textarea{
+                font-size: 18px;
+    }
+    #ititle{
+        width: 120em;
+    }
+    </style>
 </head>
 <body>
 <form action="add_index" name = "add_index" method="post">
 <input type = "hidden" name = "csrf_token" value = "{{ csrf_token() }}">
-    <p style="display: inline-block">标题：</p>
-    <input type="text" name="title"><br>
-    <input type="textarea" name="content" style="height: 200px; width: 600px"><br><br>
-    <input type="submit" value="提交">
+    <h3 style="display: inline-block">{{ form.title.label }}</h3>
+    {{ form.title }}
+    {{ form.body() }}
+    {{ form.submit() }}
+    {{ pagedown.include_pagedown() }}
 </form>
+
 {% for index in index_library %}
     <div>
         <a href="#">{{ index.title }}</a><br>
