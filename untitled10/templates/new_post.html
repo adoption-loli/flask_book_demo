@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+    textarea{
+                font-size: 18px;
+             }
+    #ititle{
+        width: 120em;
+    }
+    </style>
+<body>
+<form method="POST" action="/print">
+    <h3 style="display: inline-block">{{ form.title.label }}</h3>
+    {{ form.title }}
+    {{ form.body() }}
+    {{ form.submit() }}
+    {{ pagedown.include_pagedown() }}
+</form>
+</body>
+</html>
