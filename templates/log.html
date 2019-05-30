@@ -2,26 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <link type="text/css" href="../static/sample.css" rel="stylesheet" media="screen" />
     <title>Title</title>
-    <style>
-    textarea{
-                font-size: 18px;
-    }
-    #ititle{
-        width: 120em;
-    }
-    </style>
 </head>
 <body>
-<form action="add_index" name = "add_index" method="post">
-<input type = "hidden" name = "csrf_token" value = "{{ csrf_token() }}">
-    <h3 style="display: inline-block">{{ form.title.label }}</h3>
-    {{ form.title }}
-    {{ form.body() }}
-    {{ form.submit() }}
-    {{ pagedown.include_pagedown() }}
-</form>
-
+    <main>
+        <form action="/add_index" method="post" class="centered">
+            <p style="display: inline-block">标题:</p>
+            <input type = "hidden" name = "csrf_token" value = "{{ csrf_token() }}">
+            <input type="text" name="title" style="font-size: 18px;width: 378px;">
+            <textarea name="content" id="editor">
+            </textarea>
+            <p><input type="submit" value="提交"></p>
+        </form>
+    </main>
+    <script src="../static/ckeditor.js"></script>
+    <script src="../static/zh-cn.js"></script>
+    <script>
+        ClassicEditor
+            .create( document.querySelector('#editor'), {
+                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', 'imageUpload', '|', 'undo', 'redo'],
+                heading: {
+                    options: [
+                        { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                        { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+                        { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' }
+                    ]
+                },
+                ckfinder: {
+                    uploadUrl: "http://127.0.0.1:5000/img"
+                },
+                language: 'zh-cn'
+            })
+            .then( editor => {
+                console.log(editor);
+            })
+            .catch( error => {
+                console.error(error);
+            })
+    </script>
 {% for index in index_library %}
     <div>
         <a href="#">{{ index.title }}</a><br>

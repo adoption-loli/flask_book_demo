@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash, request,session,g
+from flask import Flask, render_template, redirect, url_for, flash, request, session, g, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_
 from flask_wtf.csrf import CSRFProtect
@@ -10,23 +10,19 @@ from wtforms.fields import SubmitField, StringField
 import markdown
 from bs4 import BeautifulSoup
 import nltk
+import uuid
+import os
 
 app = Flask(__name__)
 
 pagedown = PageDown(app)
 
 app.config['SECRET_KEY'] = "afsfa"
-CSRFProtect(app)
+csrf = CSRFProtect(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:admin@127.0.0.1:3306/userdata"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
-
-
-class PostForm(FlaskForm):
-    title = StringField("标题", render_kw={'cols': 170})
-    body = PageDownField(render_kw={'rows': 18, 'cols': 180})
-    submit = SubmitField("提交")
 
 
 class User(db.Model):
@@ -41,6 +37,11 @@ class Index(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(128))
     content = db.Column(db.String(128))
+
+
+@app.route('/')
+def index():
+    return redirect(url_for('ral'))
 
 
 @app.route('/ral', methods=['GET', 'POST'])
@@ -64,9 +65,8 @@ def login():
 @app.route('/if_login', methods=['GET', 'POST'])
 def lsuss():
     index_library = [index for index in Index.query.all()]
-    form = PostForm()
     if g.username:
-        return render_template('log.html', index_library=index_library, form=form)
+        return render_template('log.html', index_library=index_library)
     else:
         return render_template('ral.html')
 
@@ -88,13 +88,48 @@ def register():
 @app.route('/add_index', methods=['POST'])
 def add_index():
     if g.username:
-        form = PostForm(request.form)
-        titlehtml = '<h1>' + form.title.data + '</h1>'
-        bodyhtml = markdown.markdown(form.body.data)
-        index = Index(title=form.title.data[:20], content=BeautifulSoup(bodyhtml).get_text()[:100])
-        db.session.add(index)
+        title = request.form.get('title')
+        content = request.form.get('content')
+        con = BeautifulSoup(content, 'html_parser').get_text()[:100]
+        indexs = Index(title=title[:128], content=con)
+        db.session.add(indexs)
         db.session.commit()
+        with open(os.path.join(os.getcwd(), 'templates', str(indexs.id)+'.html'), 'w') as html:
+            html.write('<h1>' + title + '</h1>' + content)
     return redirect(url_for('lsuss'))
+
+
+@csrf.exempt
+@app.route('/img', methods=['POST'])
+def img_load():
+    file = request.files['upload']
+    suffix = file.filename.rsplit('.', 1)[1]
+    name = uuid.uuid4().hex + '.' + suffix
+    while os.path.exists(os.path.join(os.getcwd(), 'static', 'imgs', name)):
+        name = uuid.uuid4().hex + '.' + suffix
+    file.save(os.path.join(os.getcwd(), 'static', 'imgs', name))
+    response = {
+                'uploaded': True,
+                'url': 'static/imgs/' + name
+                }
+    return jsonify(response)
+
+
+@app.route('/imgs/<img_name>')
+def load(img_name):
+    image = os.path.join(os.getcwd(), 'static', 'imgs', img_name)
+    if not os.path.exists(image):
+        return '', 404
+    suffix = {
+        'jpeg': 'image/jpeg',
+        'jpg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif'
+    }
+    mine = suffix[str(image.rsplit('.', 1)[1])]
+    with open(image, 'rb') as file:
+        img = file.read()
+    return Response(img, mimetype=mine)
 
 
 @app.before_request
@@ -112,6 +147,7 @@ def test():
 def name():
     username = session.get('username')
     return {'username': username}
+
 
 
 db.drop_all()
