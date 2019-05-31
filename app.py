@@ -13,6 +13,7 @@ import nltk
 import uuid
 import os
 
+
 app = Flask(__name__)
 
 pagedown = PageDown(app)
@@ -90,7 +91,7 @@ def add_index():
     if g.username:
         title = request.form.get('title')
         content = request.form.get('content')
-        con = BeautifulSoup(content, 'html_parser').get_text()[:100]
+        con = BeautifulSoup(content, 'html.parser').get_text()[:100]
         indexs = Index(title=title[:128], content=con)
         db.session.add(indexs)
         db.session.commit()
@@ -110,7 +111,7 @@ def img_load():
     file.save(os.path.join(os.getcwd(), 'static', 'imgs', name))
     response = {
                 'uploaded': True,
-                'url': 'static/imgs/' + name
+                'url': '/static/imgs/' + name
                 }
     return jsonify(response)
 
@@ -132,6 +133,11 @@ def load(img_name):
     return Response(img, mimetype=mine)
 
 
+@app.route('/details/<int:act_id>')
+def details(act_id):
+    return render_template(str(act_id)+'.html')
+
+
 @app.before_request
 def test():
     username = session.get('username')
@@ -143,16 +149,24 @@ def test():
             g.username = username
 
 
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    aim = request.form.get('aim')
+    print(aim)
+    aims = [index for index in Index.query.filter(Index.title.like('%{}%'.format(aim)))]
+    print(aims)
+    return render_template('search.html', index=aims)
+
+
 @app.context_processor
 def name():
     username = session.get('username')
     return {'username': username}
 
-
-
+'''
 db.drop_all()
 db.create_all()
-
+'''
 
 if __name__ == '__main__':
     app.run(Debug=True)

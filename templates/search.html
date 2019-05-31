@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form action="/search" method="post">
+    <input type = "hidden" name = "csrf_token" value = "{{ csrf_token() }}">
+    <input type="text" name="aim">
+    <input type="submit">
+</form>
+
+{% for i in index %}
+    <h1>{{ i.title }}</h1>
+    <p>{{ i.content }}</p>
+    <hr>
+{% endfor %}
+
+</body>
+</html>
