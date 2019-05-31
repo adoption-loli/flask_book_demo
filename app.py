@@ -12,6 +12,9 @@ from bs4 import BeautifulSoup
 import nltk
 import uuid
 import os
+import smtplib
+from email.mime.text import MIMEText
+from email.header import Header
 
 
 app = Flask(__name__)
@@ -24,6 +27,12 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:admin@127.0.0.1:33
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+
+
+class Subscribe(db.Model):
+    __tablename__ = 'subscribes'
+    id = db.Column(db.Integer, primary_key=True)
+    adress = db.Column(db.String(128), unique=True)
 
 
 class User(db.Model):
@@ -97,6 +106,7 @@ def add_index():
         db.session.commit()
         with open(os.path.join(os.getcwd(), 'templates', str(indexs.id)+'.html'), 'w') as html:
             html.write('<h1>' + title + '</h1>' + content)
+        sendemail(title, 'http:////127.0.0.1:5000//details//str(indexs.id)')
     return redirect(url_for('lsuss'))
 
 
@@ -147,6 +157,23 @@ def test():
         user = User.query.filter(and_(User.username == username, User.password == password)).first()
         if user:
             g.username = username
+
+
+@app.route('/sendemail')
+def sendemail(title, url):
+    emails = [i for i in Subscribe.query.all()]
+    e_mails = [i for i in emails.adress]
+    smtp = smtplib.SMTP()
+    smtp.connect('smtp.qq.com')
+    prot: 465
+    smtp.login('1509636344@qq.com', 'zxcaftjfhqtnibeb')
+    message = MIMEText('<a href = "{}">{}</h1>'.format(url, title), 'html', 'utf-8')  # 邮件内容
+    message['From'] = Header("adoption", 'utf-8')                             # 发送者
+    message['To'] = Header("you", 'utf-8')                               # 接收者
+    subject = '订阅更新啦'                                        # 邮件标题
+    message['Subject'] = Header(subject, 'utf-8')                           # 还是邮件标题
+    smtp.sendmail('1509636344@qq.com', e_mails, message.as_string())
+    smtp.quit()
 
 
 @app.route('/search', methods=['GET', 'POST'])

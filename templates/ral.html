@@ -5,7 +5,18 @@
     <title>Title</title>
 </head>
 <body>
-    <a href="/search">123</a>
+    <a href="/search">搜索</a>
+    <form action="subscr">
+        <input type = "hidden" name = "csrf_token" value = "{{ csrf_token() }}">
+        <h1>订阅</h1>
+        <table>
+            <tr>
+                <td>邮箱这个还没后端</td>
+                <td><input type="text" name="email"></td>
+            </tr>
+        </table>
+        <hr>
+    </form>
     <form action="/login" method="post" name="login">
         <input type = "hidden" name = "csrf_token" value = "{{ csrf_token() }}">
         <h1>登陆</h1>
