@@ -44,8 +44,9 @@
     </script>
 {% for index in index_library %}
     <div>
-        <a href="/details/{{ index.id }}">{{ index.title }}</a><br>
+        <a href="/details/{{ index.id }}">{{ index.title }} </a><br>
         <p>{{ index.content }}</p>
+        <a href="/alter/{{ index.id }}">修改</a>
         <hr>
     </div>
 {% endfor %}
