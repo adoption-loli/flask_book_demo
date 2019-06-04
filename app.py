@@ -173,6 +173,7 @@ def test():
 
 @app.route('/sendemail')
 def sendemail(title, url):
+    e_mails = []
     emails = [i for i in Subscribe.query.all()]
     for i in range(len(emails)):
         e_mails = emails[i].adress
@@ -211,14 +212,14 @@ def search():
 @app.route('/alter/<int:id>')
 def alter(id):
     if g.username:
-        indexs = Index.query.filter(id=id).first()
-        with open(os.path.join(os.getcwd(), 'templates', str(indexs.id) + '.html'), 'w') as html:
+        indexs = Index.query.filter(id == id).first()
+        with open(os.path.join(os.getcwd(), 'templates', str(indexs.id) + '.html'), 'r') as html:
             text = html.read()
             con = r"</h1>.+>"
             content = re.compile(con)
             content.findall(text)
         index_library = [index for index in Index.query.all()]
-        return render_template(url_for('log', title=indexs.title, content=content, index_library=index_library))
+        return render_template('log.html', title=indexs.title, content=content, index_library=index_library)
 
 
 @app.context_processor

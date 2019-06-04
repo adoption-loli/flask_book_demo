@@ -11,8 +11,8 @@
         <form action="/add_index" method="post" class="centered">
             <p style="display: inline-block">标题:</p>
             <input type = "hidden" name = "csrf_token" value = "{{ csrf_token() }}">
-            <input type="text" name="title" style="font-size: 18px;width: 378px;">
-            <textarea name="content" id="editor">
+            <input type="text" name="title" style="font-size: 18px;width: 378px;" value="{{ title }}">
+            <textarea name="content" id="editor" >
             </textarea>
             <p><input type="submit" value="提交"></p>
         </form>
