@@ -97,28 +97,17 @@ def register():
 
 
 @app.route('/add_index', methods=['POST'])
-def add_index(alter = False, alid = None):
+def add_index():
     if g.username:
-        if alter == False:
-            title = request.form.get('title')
-            content = request.form.get('content')
-            con = BeautifulSoup(content, 'html.parser').get_text()[:200]
-            indexs = Index(title=title[:128], content=con)
-            db.session.add(indexs)
-            db.session.commit()
-            with open(os.path.join(os.getcwd(), 'templates', str(indexs.id)+'.html'), 'w') as html:
-                html.write('<h1>' + title + '</h1>' + content)
-            sendemail(title, 'http://127.0.0.1:5000/details/{}'.format(indexs.id))
-        else:
-            indexs = Index.query.filter(id = alid).first()
-            title = request.form.get('title')
-            content = request.form.get('content')
-            con = BeautifulSoup(content, 'html.parser').get_text()[:200]
-            indexs.title = title[:128]
-            indexs.content = con
-            db.session.commit()
-            with open(os.path.join(os.getcwd(), 'templates', str(indexs.id)+'.html'), 'w') as html:
-                html.write('<h1>' + title + '</h1>' + content)
+        title = request.form.get('title')
+        content = request.form.get('content')
+        con = BeautifulSoup(content, 'html.parser').get_text()[:200]
+        indexs = Index(title=title[:128], content=con)
+        db.session.add(indexs)
+        db.session.commit()
+        with open(os.path.join(os.getcwd(), 'templates', str(indexs.id)+'.html'), 'w') as html:
+            html.write('<h1>' + title + '</h1>' + content)
+        sendemail(title, 'http://127.0.0.1:5000/details/{}'.format(indexs.id))
     return redirect(url_for('lsuss'))
 
 
@@ -191,7 +180,7 @@ def sendemail(title, url):
     smtp.quit()
 
 
-@app.route('/subemail',methods=['POST'])
+@app.route('/subemail', methods=['POST'])
 def subemail():
     email = request.form.get('email')
     email = Subscribe(adress=email)
@@ -219,8 +208,14 @@ def alter(id):
             content = re.compile(con)
             content.findall(text)
         index_library = [index for index in Index.query.all()]
-        return render_template('log.html', title=indexs.title, content=content, index_library=index_library)
+        return render_template('alter.html', title=indexs.title, content=content, index_library=index_library)
 
+
+@app.route('/logout')
+def logout():
+    session['username'] = None
+    session['password'] = None
+    return redirect(url_for('ral'))
 
 @app.context_processor
 def name():

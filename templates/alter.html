@@ -2,13 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-    <link type="text/css" href="../static/sample.css" rel="stylesheet" media="screen" />
     <title>Title</title>
 </head>
 <body>
     <main>
-        <form action="/add_index" method="post" class="centered">
+        <form action="/altering" method="post" class="centered">
             <p style="display: inline-block">标题:</p>
             <input type = "hidden" name = "csrf_token" value = "{{ csrf_token() }}">
             <input type="text" name="title" style="font-size: 18px;width: 378px;" value="{{ title }}">
@@ -42,15 +40,5 @@
                 console.error(error);
             })
     </script>
-    <a href="/logout">退出</a>
-{% for index in index_library %}
-    <div>
-        <a href="/details/{{ index.id }}">{{ index.title }} </a><br>
-        <p>{{ index.content }}</p>
-        <a href="/alter/{{ index.id }}">修改</a>
-        <hr>
-    </div>
-{% endfor %}
-
 </body>
 </html>
